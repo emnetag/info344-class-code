@@ -3,12 +3,27 @@
 $appId = '2de143494c0b295cca9337e1e96b00e0';
 
 //weather API URL
-//http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&units=imperial&appid={$appId}
+
 
 //weather icon URLs
 // http://openweathermap.org/img/w/{iconName}.png
+require_once 'connection.php';
+require_once 'models/zip-model.php';
 
-$q = '';
+$q = $_GET['q'];
+
+$conn = getConnection();
+$zipModel = new Zips($conn);
+$query = $zipModel->search($q);
+
+if (count($query) == 1) {
+    $zip = $query[0]['zip'];
+    $url = "http://api.openweathermap.org/data/2.5/weather?zip={$zip},us&units=imperial&appid={$appId}";
+    $req = file_get_contents($url);
+    $weatherData = json_decode($req);
+    var_dump($req);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,8 +40,10 @@ $q = '';
 <body class="container">
     <?php 
     include 'views/search-form.php';
-
+    include 'views/matches.php';
     ?>
-   
+    
+    <h1>Current Weather</h1>
+    <p><?= htmlentities($weatherData->main->temp) ?>&deg;F</p>
 </body>
 </html>
